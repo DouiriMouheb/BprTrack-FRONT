@@ -4,72 +4,76 @@ import { Toaster } from 'react-hot-toast';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { AuthProvider } from './contexts/AuthContext';
-import { NotificationProvider } from './contexts/NotificationContext';
-import { BatchEditingProvider } from './contexts/BatchEditingContext';
 import MainLayout from './layouts/MainLayout';
 import ProtectedRoute from './components/ProtectedRoute';
 import Login from './pages/Login';
-import Example from './pages/Example';
 import ProfileSettings from './pages/ProfileSettings';
+import CertEngine from './pages/CertEngine';
 
 const App = () => (
   <ThemeProvider>
     <AuthProvider>
-      <NotificationProvider>
-        <BatchEditingProvider>
+    
+       
           <Router>
         <Toaster 
           position="top-right"
           toastOptions={{
+            style: {
+              background: 'hsl(var(--panel))',
+              color: 'hsl(var(--text))',
+              border: '2px solid hsl(var(--accent))',
+              boxShadow: '0 4px 24px rgba(0,0,0,0.18)',
+              fontWeight: 500,
+              fontSize: '1rem',
+              letterSpacing: '0.01em',
+              borderRadius: '0.75rem',
+              padding: '1rem 1.5rem',
+            },
             success: {
-              style: { 
-                background: 'hsl(var(--success))', 
-                color: 'hsl(var(--success-foreground))',
-                border: '1px solid hsl(var(--success))'
+              iconTheme: {
+                primary: '#22c55e', // green
+                secondary: 'hsl(var(--panel))',
               },
-              iconTheme: { 
-                primary: 'hsl(var(--success-foreground))', 
-                secondary: 'hsl(var(--success))' 
+              style: {
+                background: '#22c55e', // green
+                color: '#fff',
+                border: '2px solid #22c55e',
               },
             },
             error: {
-              style: { 
-                background: 'hsl(var(--error))', 
-                color: 'hsl(var(--error-foreground))',
-                border: '1px solid hsl(var(--error))'
+              iconTheme: {
+                primary: '#ef4444', // red
+                secondary: 'hsl(var(--panel))',
               },
-              iconTheme: { 
-                primary: 'hsl(var(--error-foreground))', 
-                secondary: 'hsl(var(--error))' 
+              style: {
+                background: '#ef4444', // red
+                color: '#fff',
+                border: '2px solid #ef4444',
               },
             },
             loading: {
-              style: { 
-                background: 'hsl(var(--info))', 
-                color: 'hsl(var(--info-foreground))',
-                border: '1px solid hsl(var(--info))'
+              iconTheme: {
+                primary: '#facc15', // yellow
+                secondary: 'hsl(var(--panel))',
+              },
+              style: {
+                background: '#facc15', // yellow
+                color: '#222',
+                border: '2px solid #facc15',
               },
             },
-          }} 
+          }}
         />
         <Routes>
           <Route path="/login" element={<Login />} />
+          {/* Example page removed */}
           <Route
-            path="/"
+            path="/cert-engine"
             element={
               <ProtectedRoute>
                 <MainLayout>
-                  <Example />
-                </MainLayout>
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/example"
-            element={
-              <ProtectedRoute>
-                <MainLayout>
-                  <Example />
+                  <CertEngine />
                 </MainLayout>
               </ProtectedRoute>
             }
@@ -87,12 +91,12 @@ const App = () => (
           {/* Catch-all route - redirect to home */}
           <Route
             path="*"
-            element={<Navigate to="/" replace />}
+            element={<Navigate to="/cert-engine" replace />}
           />
         </Routes>
           </Router>
-        </BatchEditingProvider>
-      </NotificationProvider>
+      
+      
     </AuthProvider>
   </ThemeProvider>
 );
