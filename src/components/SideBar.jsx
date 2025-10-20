@@ -51,11 +51,16 @@ const Sidebar = ({ open, setOpen, isMobile }) => {
               key={to}
               to={to}
               onClick={handleLinkClick}
-              className={`flex flex-col items-center gap-1 text-sm w-20 py-1 rounded text-[hsl(var(--text-white))] ${isActive ? 'font-bold border-b-2 border-[hsl(var(--red))]' : ''}`}
+              aria-label={label}
+              className={`flex flex-col items-center gap-1 text-sm w-20 py-2 rounded-lg transition-all duration-200 ${
+                isActive 
+                  ? 'font-bold text-[hsl(var(--red))] bg-[hsl(var(--red))/0.15]' 
+                  : 'text-[hsl(var(--text-white))] hover:text-[hsl(var(--red))] hover:bg-[hsl(var(--red))/0.1]'
+              }`}
               aria-current={isActive ? 'page' : undefined}
             >
-              <Icon size={20} className={`text-[hsl(var(--text-white))] ${isActive ? 'text-[hsl(var(--red))]' : ''}`} />
-              <span className="truncate text-xs">{label}</span>
+              <Icon size={22} className={`transition-transform duration-200 ${isActive ? 'scale-110' : ''}`} />
+              <span className="truncate text-xs font-semibold">{label}</span>
             </Link>
           );
         })}
@@ -85,8 +90,13 @@ const Sidebar = ({ open, setOpen, isMobile }) => {
   return (
   <aside className={`fixed h-screen z-40 left-0 top-0 transition-all duration-50 p-4 flex flex-col`} style={{ backgroundColor: 'hsl(var(--black))' }}>
       {/* Desktop toggle button */}
-      <button className="btn btn-ghost mb-6 self-start" onClick={() => setOpen(!open)} aria-label={open ? 'Close sidebar' : 'Open sidebar'}>
-  {open ? <X size={18} className="text-white" /> : <Menu size={18} className="text-white" />}
+      <button 
+        className="text-[hsl(var(--text-white))] hover:bg-[hsl(var(--red))/0.2] hover:text-[hsl(var(--red))] transition-all duration-200 p-2 rounded-lg mb-6 self-start" 
+        onClick={() => setOpen(!open)} 
+        aria-label={open ? 'Close sidebar' : 'Open sidebar'}
+        aria-expanded={open}
+      >
+        {open ? <X size={20} /> : <Menu size={20} />}
       </button>
 
       <nav className={`sidebar-nav flex flex-col gap-2 flex-1 ${!open ? 'items-center' : ''}`}>
@@ -98,14 +108,19 @@ const Sidebar = ({ open, setOpen, isMobile }) => {
               to={to}
               onClick={handleLinkClick}
               title={!open ? label : ''}
-              className={`transition-all duration-50 ease-in-out relative group text-[hsl(var(--text-white))] flex items-center gap-3 px-2 py-2 rounded ${!open ? 'justify-center' : ''} ${isActive ? 'font-bold border-l-4 border-[hsl(var(--red))] bg-[hsl(var(--black))]' : ''}`}
+              aria-label={label}
+              className={`transition-all duration-200 ease-in-out relative group text-[hsl(var(--text-white))] flex items-center gap-3 px-3 py-3 rounded-lg ${!open ? 'justify-center' : ''} ${
+                isActive 
+                  ? 'font-bold border-l-4 border-[hsl(var(--red))] bg-[hsl(var(--red))/0.15]' 
+                  : 'hover:bg-[hsl(var(--red))/0.1] hover:border-l-4 hover:border-[hsl(var(--red))/0.5]'
+              }`}
             >
               <Icon 
                 size={20} 
-                className={`transition-all duration-50 text-[hsl(var(--text-white))] ${isActive ? 'text-[hsl(var(--red))] scale-110' : ''}`}
+                className={`transition-all duration-200 text-[hsl(var(--text-white))] ${isActive ? 'text-[hsl(var(--red))] scale-110' : 'group-hover:text-[hsl(var(--red))] group-hover:scale-105'}`}
               />
               {open && (
-                <span className={`font-medium transition-colors`}>{label}</span>
+                <span className={`font-medium transition-colors ${isActive ? 'text-[hsl(var(--text-white))]' : 'group-hover:text-[hsl(var(--red))]'}`}>{label}</span>
               )}
             </Link>
           );
@@ -116,14 +131,15 @@ const Sidebar = ({ open, setOpen, isMobile }) => {
       <button
         onClick={handleLogoutClick}
         title={!open ? 'Logout' : ''}
-        className={`transition-all duration-50 relative group hover:text-red-500 mt-4 ${!open ? 'justify-center flex items-center' : 'flex items-center gap-3'}`}
+        aria-label="Logout"
+        className={`transition-all duration-200 ease-in-out relative group text-[hsl(var(--text-white))] hover:bg-[hsl(var(--red))/0.2] hover:border-l-4 hover:border-[hsl(var(--red))] rounded px-2 py-2 mt-4 ${!open ? 'justify-center flex items-center' : 'flex items-center gap-3'}`}
       >
         <LogOut 
           size={20} 
-          className="transition-all duration-50"
+          className="transition-all duration-200 group-hover:text-[hsl(var(--red))] group-hover:scale-110"
         />
         {open && (
-          <span className="font-medium transition-colors">{t('nav.logout')}</span>
+          <span className="font-medium transition-colors group-hover:text-[hsl(var(--red))]">{t('nav.logout')}</span>
         )}
       </button>
 
