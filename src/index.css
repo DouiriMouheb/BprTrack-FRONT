@@ -1,3 +1,9 @@
+/* Modal card solid background */
+/* Modal card solid background and black text */
+.modal-card {
+  background: hsl(var(--gray));
+  color: hsl(var(--text-black));
+}
 
 table.app-table tbody tr:hover { background: color-mix(in srgb, hsl(var(--panel)) 90%, hsl(var(--bg))); }
 table.app-table tbody tr:nth-child(even) { background: color-mix(in srgb, hsl(var(--panel)) 96%, hsl(var(--bg))); }

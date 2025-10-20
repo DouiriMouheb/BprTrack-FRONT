@@ -6,7 +6,8 @@
     "batchEditing": "Batch Editing",
     "messenger": "Messenger",
     "profile": "Profile",
-    "logout": "Logout"
+    "logout": "Logout",
+    "logoutConfirm": "Are you sure you want to logout?"
   },
   "notifications": {
     "title": "Notifications",

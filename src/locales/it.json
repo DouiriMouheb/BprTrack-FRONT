@@ -6,7 +6,8 @@
     "batchEditing": "Modifica Batch",
     "messenger": "Messaggi",
     "profile": "Profilo",
-    "logout": "Esci"
+    "logout": "Esci",
+    "logoutConfirm": "Sei sicuro di voler uscire?"
   },
   "notifications": {
     "title": "Notifiche",

@@ -66,16 +66,16 @@ const Sidebar = ({ open, setOpen, isMobile }) => {
           onBackdropClick={handleCancelLogout}
           footer={
             <>
-              <button onClick={handleCancelLogout} className="btn btn-ghost">
+              <button onClick={handleCancelLogout} className="btn btn-secondary">
                 Cancel
               </button>
-              <button onClick={handleLogout} className="btn btn-danger">
-                Logout
+              <button onClick={handleLogout} className="btn btn-primary">
+                {t('nav.logout')}
               </button>
             </>
           }
         >
-       
+          <p className="text-base">{t('nav.logoutConfirm')}</p>
         </Modal>
       </nav>
     );
@@ -135,16 +135,16 @@ const Sidebar = ({ open, setOpen, isMobile }) => {
         onBackdropClick={handleCancelLogout}
         footer={
           <>
-            <button onClick={handleCancelLogout} className="btn btn-ghost">
+            <button onClick={handleCancelLogout} className="btn btn-secondary">
               Cancel
             </button>
-            <button onClick={handleLogout} className="btn btn-danger">
-              Logout
+            <button onClick={handleLogout} className="btn btn-primary">
+              {t('nav.logout')}
             </button>
           </>
         }
       >
-     
+        <p className="text-base">{t('nav.logoutConfirm')}</p>
       </Modal>
     </aside>
   );
