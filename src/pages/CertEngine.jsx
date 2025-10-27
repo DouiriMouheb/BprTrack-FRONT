@@ -59,9 +59,7 @@ const CertEngine = () => {
                 <h1 className="text-4xl md:text-6xl font-bold text-white">
                   Cert Engine
                 </h1>
-                <p className="text-white/70 text-sm md:text-base font-medium mt-1">
-                  Advanced certificate search and management
-                </p>
+               
               </div>
             </div>
            
@@ -86,7 +84,7 @@ const CertEngine = () => {
                       type="text"
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      placeholder="Search by certificate ID, name, or reference key..."
+                      placeholder="Search by chiave"
                       disabled={isSearching}
                       className="w-full pl-20 pr-44 py-6 text-lg bg-transparent border-0 rounded-2xl 
                                focus:outline-none
