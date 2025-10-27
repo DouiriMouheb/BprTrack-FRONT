@@ -1,11 +1,13 @@
 import React, { useState, useMemo } from 'react';
-import { Search, Loader2, RefreshCw, Database, FileSearch, TrendingUp, CheckCircle2, XCircle, AlertCircle } from 'lucide-react';
+import { Search, Loader2, RefreshCw, Database, FileSearch, TrendingUp, CheckCircle2, XCircle, AlertCircle, Lock } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useDataSearch } from '../hooks/useDataSearch';
 import DataTable from '../components/DataTable';
+import LoginModal from '../components/LoginModal';
 
 const CertEngine = () => {
   const [searchQuery, setSearchQuery] = useState('');
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const { isSearching, results, error, lastSearchKey, search, refresh } = useDataSearch();
   const { t } = useTranslation();
 
@@ -37,8 +39,9 @@ const CertEngine = () => {
     return {
       total: tableData.length,
       searchKey: lastSearchKey,
+      isCertified: results?.certified || false,
     };
-  }, [tableData, lastSearchKey]);
+  }, [tableData, lastSearchKey, results]);
 
   return (
     <div className="min-h-screen p-2 md:p-6">
@@ -55,12 +58,19 @@ const CertEngine = () => {
               <div className="p-3 bg-[hsl(var(--red))] rounded-xl shadow-lg transform hover:scale-105 transition-transform duration-200">
                 <Database className="text-white" size={28} />
               </div>
-              <div>
+              <div className="flex-1">
                 <h1 className="text-4xl md:text-6xl font-bold text-white">
                   Cert Engine
                 </h1>
-               
               </div>
+              <button
+                onClick={() => setIsLoginModalOpen(true)}
+                className="p-2 md:p-3 bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-xl border border-white/30 
+                         transition-all duration-200 hover:scale-105 active:scale-95 shadow-lg group"
+                title="Admin Login"
+              >
+                <Lock className="text-white group-hover:text-white/90" size={20} />
+              </button>
             </div>
            
             {/* Search Bar and Stats in Same Line */}
@@ -138,20 +148,34 @@ const CertEngine = () => {
               {/* Quick Stats Banner */}
               {stats && (
                 <div className="flex flex-wrap gap-3 animate-fadeIn lg:flex-nowrap">
-                  <div className="flex items-center gap-2 px-4 py-3 bg-gradient-to-r from-green-500/20 to-emerald-500/20 backdrop-blur-sm rounded-xl border border-green-400/30 shadow-lg">
+                  {/*    <div className="flex items-center gap-2 px-4 py-3 bg-gradient-to-r from-green-500/20 to-emerald-500/20 backdrop-blur-sm rounded-xl border border-green-400/30 shadow-lg">
                     <CheckCircle2 className="text-green-300" size={20} />
                     <div>
                       <p className="text-white/60 text-xs font-medium uppercase tracking-wide">Results</p>
                       <p className="text-white font-bold text-base">{stats.total}</p>
                     </div>
-                  </div>
-                  <div className="flex items-center gap-2 px-4 py-3 bg-gradient-to-r from-blue-500/20 to-cyan-500/20 backdrop-blur-sm rounded-xl border border-blue-400/30 shadow-lg">
-                    <FileSearch className="text-blue-300" size={20} />
+                  </div>  */}
+               
+                  
+                  {/* Status Badge - Certified or Pending */}
+                  <div className={`flex items-center gap-2 px-4 py-3 backdrop-blur-sm rounded-xl border shadow-lg ${
+                    stats.isCertified 
+                      ? 'bg-gradient-to-r from-green-500/20 to-emerald-500/20 border-green-400/30' 
+                      : 'bg-gradient-to-r from-orange-500/20 to-amber-500/20 border-orange-400/30'
+                  }`}>
+                    {stats.isCertified ? (
+                      <CheckCircle2 className="text-green-300" size={20} />
+                    ) : (
+                      <XCircle className="text-orange-300" size={20} />
+                    )}
                     <div>
-                      <p className="text-white/60 text-xs font-medium uppercase tracking-wide">Key</p>
-                      <p className="text-white font-bold text-base">{stats.searchKey}</p>
+                      <p className="text-white/60 text-xs font-medium uppercase tracking-wide">Status</p>
+                      <p className="text-white font-bold text-base">
+                        {stats.isCertified ? 'Certified' : 'Pending'}
+                      </p>
                     </div>
                   </div>
+
                   {lastSearchKey && (
                     <button
                       onClick={handleRefresh}
@@ -259,6 +283,12 @@ const CertEngine = () => {
           )}
         </div>
       </div>
+
+      {/* Login Modal */}
+      <LoginModal 
+        isOpen={isLoginModalOpen} 
+        onClose={() => setIsLoginModalOpen(false)} 
+      />
     </div>
   );
 };
