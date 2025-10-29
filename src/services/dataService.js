@@ -2,6 +2,8 @@
  * Service for handling Data API calls
  */
 
+import { getAuthHeaders } from './authService';
+
 // Environment-based configuration
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
 const CERT_API_BASE_URL = import.meta.env.VITE_CERT_API_BASE_URL || 'http://172.31.95.29:5001/api';
@@ -10,15 +12,19 @@ const REQUEST_TIMEOUT = 30000; // 30 seconds
 /**
  * Create fetch request with timeout
  * @param {string} url - The URL to fetch
+ * @param {Object} options - Fetch options (headers, method, body, etc.)
  * @param {number} timeout - Timeout in milliseconds
  * @returns {Promise<Response>}
  */
-const fetchWithTimeout = async (url, timeout = REQUEST_TIMEOUT) => {
+const fetchWithTimeout = async (url, options = {}, timeout = REQUEST_TIMEOUT) => {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeout);
 
   try {
-    const response = await fetch(url, { signal: controller.signal });
+    const response = await fetch(url, { 
+      ...options, 
+      signal: controller.signal 
+    });
     clearTimeout(timeoutId);
     return response;
   } catch (error) {
@@ -45,6 +51,7 @@ export const searchData = async (chiaveRicerca) => {
   const url = `${API_BASE_URL}/Data/${encodedKey}`;
 
   try {
+    // This endpoint is public with [AllowAnonymous], no auth headers needed
     const response = await fetchWithTimeout(url);
 
     // Try to parse JSON response for both success and error cases
@@ -78,7 +85,12 @@ export const getAllData = async () => {
   const url = `${API_BASE_URL}/data`;
 
   try {
-    const response = await fetchWithTimeout(url);
+    // This endpoint requires authorization
+    const response = await fetchWithTimeout(url, {
+      headers: {
+        ...getAuthHeaders(),
+      },
+    });
 
     // Try to parse JSON response for both success and error cases
     const data = await response.json();
@@ -112,19 +124,14 @@ export const requestCertification = async (certificationData) => {
   const url = `${CERT_API_BASE_URL}/requestCert`;
 
   try {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT);
-
-    const response = await fetch(url, {
+    const response = await fetchWithTimeout(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        ...getAuthHeaders(),
       },
       body: JSON.stringify(certificationData),
-      signal: controller.signal,
     });
-
-    clearTimeout(timeoutId);
 
     // Try to parse JSON response for both success and error cases
     const data = await response.json();
@@ -139,9 +146,6 @@ export const requestCertification = async (certificationData) => {
 
     return data;
   } catch (error) {
-    if (error.name === 'AbortError') {
-      throw new Error('Request timeout - server took too long to respond');
-    }
     // Handle network errors
     if (error.message === 'Failed to fetch') {
       throw new Error('Network error - please check your connection');
@@ -162,22 +166,17 @@ export const batchUpdateTicket = async (ticket, recordIds) => {
   const url = `${API_BASE_URL}/data/batch-update`;
 
   try {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT);
-
-    const response = await fetch(url, {
+    const response = await fetchWithTimeout(url, {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
+        ...getAuthHeaders(),
       },
       body: JSON.stringify({
         ticket,
         recordIds,
       }),
-      signal: controller.signal,
     });
-
-    clearTimeout(timeoutId);
 
     // Try to parse JSON response for both success and error cases
     const data = await response.json();
@@ -192,9 +191,6 @@ export const batchUpdateTicket = async (ticket, recordIds) => {
 
     return data;
   } catch (error) {
-    if (error.name === 'AbortError') {
-      throw new Error('Request timeout - server took too long to respond');
-    }
     // Handle network errors
     if (error.message === 'Failed to fetch') {
       throw new Error('Network error - please check your connection');
@@ -213,15 +209,12 @@ export const getGasPrice = async () => {
   const url = `${CERT_API_BASE_URL}/getGasPrice`;
 
   try {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT);
-
-    const response = await fetch(url, {
+    const response = await fetchWithTimeout(url, {
       method: 'GET',
-      signal: controller.signal,
+      headers: {
+        ...getAuthHeaders(),
+      },
     });
-
-    clearTimeout(timeoutId);
 
     const data = await response.json();
 
@@ -234,9 +227,6 @@ export const getGasPrice = async () => {
 
     return data;
   } catch (error) {
-    if (error.name === 'AbortError') {
-      throw new Error('Request timeout - server took too long to respond');
-    }
     if (error.message === 'Failed to fetch') {
       throw new Error('Network error - please check your connection');
     }
@@ -254,19 +244,14 @@ export const finalizeCertification = async (certifyData) => {
   const url = `${CERT_API_BASE_URL}/certify`;
 
   try {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT);
-
-    const response = await fetch(url, {
+    const response = await fetchWithTimeout(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        ...getAuthHeaders(),
       },
       body: JSON.stringify(certifyData),
-      signal: controller.signal,
     });
-
-    clearTimeout(timeoutId);
 
     const data = await response.json();
 
@@ -279,9 +264,6 @@ export const finalizeCertification = async (certifyData) => {
 
     return data;
   } catch (error) {
-    if (error.name === 'AbortError') {
-      throw new Error('Request timeout - server took too long to respond');
-    }
     if (error.message === 'Failed to fetch') {
       throw new Error('Network error - please check your connection');
     }
@@ -301,23 +283,18 @@ export const batchUpdatePrice = async (priceEUR, changeEUR, recordIds) => {
   const url = `${API_BASE_URL}/data/batch-update-price`;
 
   try {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT);
-
-    const response = await fetch(url, {
+    const response = await fetchWithTimeout(url, {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
+        ...getAuthHeaders(),
       },
       body: JSON.stringify({
         priceEUR,
         changeEUR,
         recordIds,
       }),
-      signal: controller.signal,
     });
-
-    clearTimeout(timeoutId);
 
     const data = await response.json();
 
@@ -330,9 +307,6 @@ export const batchUpdatePrice = async (priceEUR, changeEUR, recordIds) => {
 
     return data;
   } catch (error) {
-    if (error.name === 'AbortError') {
-      throw new Error('Request timeout - server took too long to respond');
-    }
     if (error.message === 'Failed to fetch') {
       throw new Error('Network error - please check your connection');
     }
@@ -351,15 +325,12 @@ export const downloadCertificate = async (owner, ticket) => {
   const url = `${CERT_API_BASE_URL}/downloadCert?owner=${encodeURIComponent(owner)}&ticket=${encodeURIComponent(ticket)}`;
 
   try {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT);
-
-    const response = await fetch(url, {
+    const response = await fetchWithTimeout(url, {
       method: 'GET',
-      signal: controller.signal,
+      headers: {
+        ...getAuthHeaders(),
+      },
     });
-
-    clearTimeout(timeoutId);
 
     const data = await response.json();
 
@@ -372,9 +343,6 @@ export const downloadCertificate = async (owner, ticket) => {
 
     return data;
   } catch (error) {
-    if (error.name === 'AbortError') {
-      throw new Error('Request timeout - server took too long to respond');
-    }
     if (error.message === 'Failed to fetch') {
       throw new Error('Network error - please check your connection');
     }
@@ -392,19 +360,14 @@ export const updateProofs = async (proofs) => {
   const url = `${API_BASE_URL}/data/update-profs`;
 
   try {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT);
-
-    const response = await fetch(url, {
+    const response = await fetchWithTimeout(url, {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
+        ...getAuthHeaders(),
       },
       body: JSON.stringify({ proofs }),
-      signal: controller.signal,
     });
-
-    clearTimeout(timeoutId);
 
     const data = await response.json();
 
@@ -417,9 +380,6 @@ export const updateProofs = async (proofs) => {
 
     return data;
   } catch (error) {
-    if (error.name === 'AbortError') {
-      throw new Error('Request timeout - server took too long to respond');
-    }
     if (error.message === 'Failed to fetch') {
       throw new Error('Network error - please check your connection');
     }
@@ -438,22 +398,17 @@ export const batchUpdateCertified = async (certified, recordIds) => {
   const url = `${API_BASE_URL}/data/batch-update-certified`;
 
   try {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT);
-
-    const response = await fetch(url, {
+    const response = await fetchWithTimeout(url, {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
+        ...getAuthHeaders(),
       },
       body: JSON.stringify({
         certified,
         recordIds,
       }),
-      signal: controller.signal,
     });
-
-    clearTimeout(timeoutId);
 
     const data = await response.json();
 
@@ -466,9 +421,6 @@ export const batchUpdateCertified = async (certified, recordIds) => {
 
     return data;
   } catch (error) {
-    if (error.name === 'AbortError') {
-      throw new Error('Request timeout - server took too long to respond');
-    }
     if (error.message === 'Failed to fetch') {
       throw new Error('Network error - please check your connection');
     }

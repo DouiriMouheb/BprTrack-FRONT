@@ -1,16 +1,17 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { LogOut, Shield, Database, Home, Loader2, RefreshCw, CheckCircle2, XCircle, FileSearch, ChevronDown, ChevronUp, Search, Filter, Download, TrendingUp, Activity, ChevronLeft, ChevronRight, Award } from 'lucide-react';
+import { LogOut, Shield, Database, Home, Loader2, RefreshCw, CheckCircle2, XCircle, FileSearch, ChevronDown, ChevronUp, Search, Filter, Download, TrendingUp, Activity, ChevronLeft, ChevronRight, Award, Users } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { getAllData } from '../services/dataService';
 import { certifyAllRecords } from '../services/certificationService';
 import DataTable from '../components/DataTable';
 import CertificationProgressModal from '../components/CertificationProgressModal';
+import UserManagement from '../components/UserManagement';
 import toast from 'react-hot-toast';
 
 const Admin = () => {
   const navigate = useNavigate();
-  const { logout } = useAuth();
+  const { logout, user } = useAuth();
   const [data, setData] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -23,6 +24,10 @@ const Admin = () => {
   const [showProgressModal, setShowProgressModal] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
   const [progressError, setProgressError] = useState(null);
+  const [activeTab, setActiveTab] = useState('data'); // 'data' or 'users'
+
+  // Check if user has Admin role
+  const isAdmin = user?.roles?.includes('Admin');
 
   const certificationSteps = [
     {
@@ -91,6 +96,13 @@ const Admin = () => {
   useEffect(() => {
     fetchData();
   }, []);
+
+  // Ensure non-admin users can't access user management tab
+  useEffect(() => {
+    if (!isAdmin && activeTab === 'users') {
+      setActiveTab('data');
+    }
+  }, [isAdmin, activeTab]);
 
   // Calculate statistics
   const stats = useMemo(() => {
@@ -206,55 +218,128 @@ const Admin = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-gray-50 to-slate-100 p-3 md:p-6">
-      <div className="max-w-[1600px] mx-auto space-y-6">
-        {/* Modern Header with Glassmorphism */}
-        <div className="relative overflow-hidden bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl border border-gray-200/50 p-6 md:p-8">
-          {/* Subtle gradient overlay */}
-          <div className="absolute inset-0 bg-gradient-to-br from-[hsl(var(--red))/0.03] via-transparent to-blue-500/0.03 pointer-events-none"></div>
-          
-          <div className="relative z-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
-            <div className="flex items-center gap-4">
-              <div className="relative">
-                <div className="absolute inset-0 bg-gradient-to-br from-[hsl(var(--red))] to-[hsl(0_85%_60%)] rounded-2xl blur-lg opacity-50"></div>
-                <div className="relative p-4 bg-gradient-to-br from-[hsl(var(--red))] to-[hsl(0_85%_60%)] rounded-2xl shadow-xl">
-                  <Shield className="text-white" size={32} />
-                </div>
-              </div>
-              <div>
-                <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
-                  Admin Dashboard
-                </h1>
-               
-              </div>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-gray-50 to-slate-100 flex">
+      {/* Sidebar */}
+      <div className="hidden md:flex w-64 bg-white/80 backdrop-blur-xl shadow-2xl border-r border-gray-200/50 flex-col fixed h-full z-10">
+        {/* Sidebar Header */}
+        <div className="p-6 border-b border-gray-200/50">
+          <div className="flex items-center gap-3">
+            <div className="p-3 bg-gradient-to-br from-[hsl(var(--red))] to-[hsl(0_85%_60%)] rounded-2xl shadow-xl">
+              <Shield className="text-white" size={24} />
             </div>
-            
-            <div className="flex flex-wrap gap-2">
-              <button
-                onClick={() => navigate('/')}
-                className="px-5 py-2.5 bg-white hover:bg-gray-50 text-gray-700 rounded-xl font-semibold
-                         transition-all duration-200 flex items-center gap-2 shadow-md hover:shadow-lg border border-gray-200"
-              >
-                <Home size={20} />
-                <span>Home</span>
-              </button>
-              <button
-                onClick={handleLogout}
-                className="px-5 py-2.5 bg-gradient-to-r from-[hsl(var(--red))] to-[hsl(0_85%_60%)] text-white rounded-xl font-bold
-                         shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-95
-                         transition-all duration-200 flex items-center gap-2"
-              >
-                <LogOut size={20} />
-                <span>Logout</span>
-              </button>
+            <div>
+              <h1 className="text-xl font-bold text-gray-900">Admin</h1>
+              <p className="text-xs text-gray-500">Dashboard</p>
             </div>
           </div>
         </div>
 
-      
+        {/* Navigation Menu */}
+        <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
+          <button
+            onClick={() => setActiveTab('data')}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold transition-all duration-200
+              ${activeTab === 'data'
+                ? 'bg-gradient-to-r from-[hsl(var(--red))] to-[hsl(0_85%_60%)] text-white shadow-lg'
+                : 'text-gray-600 hover:bg-gray-100'
+              }`}
+          >
+            <Database size={20} />
+            <span>Data Records</span>
+          </button>
 
-        {/* Main Content - Data Records */}
-        <div className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl border border-gray-200/50 overflow-hidden">
+          {isAdmin && (
+            <button
+              onClick={() => setActiveTab('users')}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold transition-all duration-200
+                ${activeTab === 'users'
+                  ? 'bg-gradient-to-r from-[hsl(var(--red))] to-[hsl(0_85%_60%)] text-white shadow-lg'
+                  : 'text-gray-600 hover:bg-gray-100'
+                }`}
+            >
+              <Users size={20} />
+              <span>User Management</span>
+            </button>
+          )}
+        </nav>
+
+        {/* Sidebar Footer */}
+        <div className="p-4 border-t border-gray-200/50 space-y-2">
+          <button
+            onClick={() => navigate('/')}
+            className="w-full flex items-center gap-3 px-4 py-3 text-gray-600 hover:bg-gray-100 rounded-xl font-semibold transition-all"
+          >
+            <Home size={20} />
+            <span>Home</span>
+          </button>
+          <button
+            onClick={handleLogout}
+            className="w-full flex items-center gap-3 px-4 py-3 bg-gradient-to-r from-[hsl(var(--red))] to-[hsl(0_85%_60%)] text-white rounded-xl font-bold shadow-lg hover:shadow-xl transition-all"
+          >
+            <LogOut size={20} />
+            <span>Logout</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Main Content Area */}
+      <div className="flex-1 md:ml-64 overflow-auto">
+        {/* Mobile Header */}
+        <div className="md:hidden bg-white/80 backdrop-blur-xl shadow-lg border-b border-gray-200/50 p-4 sticky top-0 z-20">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-gradient-to-br from-[hsl(var(--red))] to-[hsl(0_85%_60%)] rounded-xl">
+                <Shield className="text-white" size={20} />
+              </div>
+              <h1 className="text-lg font-bold text-gray-900">Admin Dashboard</h1>
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => navigate('/')}
+                className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg"
+              >
+                <Home size={20} />
+              </button>
+              <button
+                onClick={handleLogout}
+                className="p-2 bg-[hsl(var(--red))] text-white rounded-lg"
+              >
+                <LogOut size={20} />
+              </button>
+            </div>
+          </div>
+          {/* Mobile Tab Navigation */}
+          <div className="flex gap-2 mt-4">
+            <button
+              onClick={() => setActiveTab('data')}
+              className={`flex-1 px-4 py-2 rounded-xl font-semibold text-sm transition-all
+                ${activeTab === 'data'
+                  ? 'bg-gradient-to-r from-[hsl(var(--red))] to-[hsl(0_85%_60%)] text-white'
+                  : 'bg-gray-100 text-gray-600'
+                }`}
+            >
+              Data Records
+            </button>
+            {isAdmin && (
+              <button
+                onClick={() => setActiveTab('users')}
+                className={`flex-1 px-4 py-2 rounded-xl font-semibold text-sm transition-all
+                  ${activeTab === 'users'
+                    ? 'bg-gradient-to-r from-[hsl(var(--red))] to-[hsl(0_85%_60%)] text-white'
+                    : 'bg-gray-100 text-gray-600'
+                  }`}
+              >
+                Users
+              </button>
+            )}
+          </div>
+        </div>
+
+        <div className="p-6 space-y-6">
+          
+          {/* Data Records Tab */}
+          {activeTab === 'data' && (
+          <div className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl border border-gray-200/50 overflow-hidden">
           {/* Enhanced Header with Search and Filters */}
           <div className="bg-gradient-to-r from-gray-50 to-white p-6 md:p-8 border-b border-gray-200">
             <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 mb-6">
@@ -603,6 +688,12 @@ const Admin = () => {
             )}
           </div>
         </div>
+        )}
+
+        {/* User Management Tab */}
+        {activeTab === 'users' && isAdmin && (
+          <UserManagement />
+        )}
 
         {/* Certification Progress Modal */}
         <CertificationProgressModal
@@ -611,6 +702,7 @@ const Admin = () => {
           currentStep={currentStep}
           error={progressError}
         />
+        </div>
       </div>
     </div>
   );

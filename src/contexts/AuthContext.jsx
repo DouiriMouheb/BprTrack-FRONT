@@ -1,37 +1,54 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import * as authService from '../services/authService';
 
 const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [user, setUser] = useState(null);
 
   useEffect(() => {
-    // Check if user is already authenticated in session
-    const authStatus = sessionStorage.getItem('isAuthenticated');
-    if (authStatus === 'true') {
+    // Check if user is already authenticated with valid JWT token
+    const authenticated = authService.isAuthenticated();
+    if (authenticated) {
+      const userInfo = authService.getUserInfo();
       setIsAuthenticated(true);
+      setUser(userInfo);
     }
   }, []);
 
-  const login = (username, password) => {
-    const adminUsername = import.meta.env.VITE_ADMIN_USERNAME;
-    const adminPassword = import.meta.env.VITE_ADMIN_PASSWORD;
-
-    if (username === adminUsername && password === adminPassword) {
+  const login = async (usernameOrEmail, password) => {
+    try {
+      const response = await authService.login(usernameOrEmail, password);
       setIsAuthenticated(true);
-      sessionStorage.setItem('isAuthenticated', 'true');
-      return true;
+      setUser(response.user);
+      return { success: true, data: response };
+    } catch (error) {
+      console.error('Login error:', error);
+      return { success: false, error: error.message };
     }
-    return false;
+  };
+
+  const register = async (username, email, password) => {
+    try {
+      const response = await authService.register(username, email, password);
+      setIsAuthenticated(true);
+      setUser(response.user);
+      return { success: true, data: response };
+    } catch (error) {
+      console.error('Registration error:', error);
+      return { success: false, error: error.message };
+    }
   };
 
   const logout = () => {
+    authService.logout();
     setIsAuthenticated(false);
-    sessionStorage.removeItem('isAuthenticated');
+    setUser(null);
   };
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, login, logout }}>
+    <AuthContext.Provider value={{ isAuthenticated, user, login, logout, register }}>
       {children}
     </AuthContext.Provider>
   );

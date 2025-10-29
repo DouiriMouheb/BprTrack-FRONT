@@ -5,31 +5,41 @@ import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 
 const LoginModal = ({ isOpen, onClose }) => {
-  const [username, setUsername] = useState('');
+  const [usernameOrEmail, setUsernameOrEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
 
-    if (!username || !password) {
+    if (!usernameOrEmail || !password) {
       setError('Please fill in all fields');
       return;
     }
 
-    const success = login(username, password);
-    if (success) {
-      toast.success('Login successful!');
-      onClose();
-      navigate('/admin');
-      setUsername('');
-      setPassword('');
-    } else {
-      setError('Invalid credentials');
-      toast.error('Invalid credentials');
+    setIsLoading(true);
+
+    try {
+      const result = await login(usernameOrEmail, password);
+      if (result.success) {
+        toast.success('Login successful!');
+        onClose();
+        navigate('/admin');
+        setUsernameOrEmail('');
+        setPassword('');
+      } else {
+        setError(result.error || 'Invalid credentials');
+        toast.error(result.error || 'Invalid credentials');
+      }
+    } catch (error) {
+      setError('An unexpected error occurred');
+      toast.error('An unexpected error occurred');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -68,10 +78,10 @@ const LoginModal = ({ isOpen, onClose }) => {
             </div>
           )}
 
-          {/* Username Field */}
+          {/* Username/Email Field */}
           <div>
             <label className="block text-sm font-bold text-[hsl(var(--text-black))] mb-2">
-              Username
+              Username or Email
             </label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -79,12 +89,12 @@ const LoginModal = ({ isOpen, onClose }) => {
               </div>
               <input
                 type="text"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
+                value={usernameOrEmail}
+                onChange={(e) => setUsernameOrEmail(e.target.value)}
                 className="w-full pl-10 pr-4 py-3 border-2 border-[hsl(var(--border-black))] rounded-xl 
                          focus:outline-none focus:border-[hsl(var(--red))] transition-colors
                          text-[hsl(var(--text-black))] font-medium"
-                placeholder="Enter username"
+                placeholder="Enter username or email"
                 autoFocus
               />
             </div>
@@ -114,12 +124,14 @@ const LoginModal = ({ isOpen, onClose }) => {
           {/* Submit Button */}
           <button
             type="submit"
+            disabled={isLoading}
             className="w-full py-3 bg-gradient-to-r from-[hsl(var(--red))] to-[hsl(0_85%_60%)] text-white rounded-xl font-bold
                      shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-95
-                     transition-all duration-200 flex items-center justify-center gap-2"
+                     transition-all duration-200 flex items-center justify-center gap-2
+                     disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
           >
             <LogIn size={20} />
-            Login
+            {isLoading ? 'Logging in...' : 'Login'}
           </button>
         </form>
       </div>
